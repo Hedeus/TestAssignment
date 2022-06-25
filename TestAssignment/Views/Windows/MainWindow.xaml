@@ -4,9 +4,20 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TestAssignment"
+        xmlns:converter="clr-namespace:TestAssignment.Infrastructure.Converters"
         xmlns:fa="http://schemas.fontawesome.com/icons/fonts"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         DataContext="{Binding MainWindowModel ,Source={StaticResource Locator}}"
         Title="{Binding Title}" Height="450" Width="800">
+    <Window.Resources>
+        <!--<converter:ItemBackGroundConverter x:Key="itembackground"></converter:ItemBackGroundConverter>-->
+        <converter:PriceToUSDConverter x:Key="usdprice"/>
+    </Window.Resources>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadDataCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <DockPanel>
         <Menu DockPanel.Dock="Top"
               IsMainMenu="True">
@@ -37,23 +48,26 @@
                                 <TextBlock Text="Оновити дані"/>
                             </StackPanel>
                         </Button>
-                        <ListBox ItemsSource="{Binding AssetsList.Assets}">
+                        <ListBox ItemsSource="{Binding AssetsList.Assets}"
+                                 AlternationCount="1"
+                                 SelectedItem="{Binding SelectedAsset}">                            
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem">
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                            <ListBox.ItemTemplate>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>                                    
+                                </Style>                                
+                            </ListBox.ItemContainerStyle>                            
+                            <ListBox.ItemTemplate>                                
                                 <DataTemplate DataType="m:Asset">
                                     <DockPanel>                                        
-                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Price, StringFormat={}{0:F4}}"/>
-                                        <StackPanel DockPanel.Dock="Left"
-                                                    Orientation="Horizontal"
-                                                    HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding Name}"/>
-                                            <TextBlock Text="{Binding AssetId, StringFormat=({0})}"
-                                                       Margin="3 0"/>
-                                        </StackPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Price, StringFormat={}{0:F4}}"/>                                        
+                                        <TextBlock DockPanel.Dock="Left">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} ({1})">
+                                                    <Binding Path="Name"/>
+                                                    <Binding Path="AssetId"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
                                     </DockPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -61,7 +75,55 @@
                     </DockPanel>
                 </TabItem>
             </TabControl>
+            <TabControl Grid.Column="1">
+                <TabItem Header="Детально">
+                    <GroupBox Header="{Binding AssetId}" DataContext="{Binding SelectedAsset}">
+                        <Grid>
+                            <Grid.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <Trigger Property="Grid.Column" Value="0">
+                                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                                            <Setter Property="Margin" Value="0 0 2 0"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </Trigger>
+                                    </Style.Triggers>                                    
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Column="0" Grid.Row="0" Text="Id:"/>
+                            <TextBlock Grid.Column="0" Grid.Row="1" Text="Назва:"/>
+                            <TextBlock Grid.Column="0" Grid.Row="2" Text="Вартість USD:"/>
+                            <TextBlock Grid.Column="0" Grid.Row="3" Text="Зміни за 1 год:"/>
+                            <TextBlock Grid.Column="0" Grid.Row="4" Text="Зміни за 24 год:"/>
+                            <TextBlock Grid.Column="0" Grid.Row="5" Text="Зміни за 7 днів:"/>
+                            <TextBlock Grid.Column="0" Grid.Row="6" Text="Об'єм :"/>
+                            <TextBlock Grid.Column="0" Grid.Row="7" Text="Сайт валюти:"/>
 
+                            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding AssetId}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Name}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Price, Converter={StaticResource usdprice}}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding}"/>
+                        </Grid>
+                    </GroupBox>
+                </TabItem>
+            </TabControl>            
             <GridSplitter Grid.Column="0" HorizontalAlignment="Right" Width="3"/>
         </Grid>
     </DockPanel>

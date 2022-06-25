@@ -31,6 +31,12 @@ namespace TestAssignment.ViewModels
         private bool _CanLoadData = true;
         public bool CanLoadData {  get => _CanLoadData; set => Set(ref _CanLoadData, value); }
         #endregion
+
+        #region SelectedAsset : Asset - Обрана криптовалюта
+        private Asset _SelectedAsset;
+        public Asset SelectedAsset { get => _SelectedAsset; set => Set(ref _SelectedAsset, value); }
+        #endregion        
+
         /*-------------------------------------Методи-------------------------------------------*/
 
         private AssetsRoot LoadData()
