@@ -40,7 +40,9 @@ namespace TestAssignment.Infrastructure.Converters
                 if ((significantDigits < test.Length) && result.EndsWith("."))
                     result = result.Substring(0, result.Length - 1);
             }
-            return "$" + result;
+            if (parameter is null)
+                return result;
+            return (string)parameter + result;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
