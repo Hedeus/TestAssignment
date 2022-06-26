@@ -12,6 +12,7 @@
     <Window.Resources>
         <!--<converter:ItemBackGroundConverter x:Key="itembackground"></converter:ItemBackGroundConverter>-->
         <converter:PriceToUSDConverter x:Key="usdprice"/>
+        <converter:PercentConverter x:Key="percent"/>
     </Window.Resources>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
@@ -58,8 +59,8 @@
                             </ListBox.ItemContainerStyle>                            
                             <ListBox.ItemTemplate>                                
                                 <DataTemplate DataType="m:Asset">
-                                    <DockPanel>                                        
-                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Price, StringFormat={}{0:F4}}"/>                                        
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding Price,Converter={StaticResource usdprice}}"/>                                        
                                         <TextBlock DockPanel.Dock="Left">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="{}{0} ({1})">
@@ -84,8 +85,11 @@
                                     <Style.Triggers>
                                         <Trigger Property="Grid.Column" Value="0">
                                             <Setter Property="HorizontalAlignment" Value="Right"/>
-                                            <Setter Property="Margin" Value="0 0 2 0"/>
+                                            <Setter Property="Margin" Value="0 3 4 0"/>
                                             <Setter Property="FontWeight" Value="Bold"/>
+                                        </Trigger>
+                                        <Trigger Property="Grid.Column" Value="1">
+                                            <Setter Property="Margin" Value="0 3 0 0"/>
                                         </Trigger>
                                     </Style.Triggers>                                    
                                 </Style>
@@ -116,10 +120,11 @@
                             <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding AssetId}"/>
                             <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Name}"/>
                             <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding Price, Converter={StaticResource usdprice}}"/>
-                            <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding}"/>
-                            <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding}"/>
-                            <TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding}"/>
-                            <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Change1h, Converter={StaticResource percent}}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Change24h, Converter={StaticResource percent}}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding Change7d, Converter={StaticResource percent}}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="6" Text="{Binding Volume24h}"/>
+                            <TextBlock Grid.Column="1" Grid.Row="7" Text="{Binding Website}"/>
                         </Grid>
                     </GroupBox>
                 </TabItem>
