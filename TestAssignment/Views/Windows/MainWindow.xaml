@@ -260,7 +260,7 @@
                                 <TextBlock Grid.Column="0" Grid.Row="3" Text="Зміни за 24 год:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="4" Text="Спред:"/>                                
                                 <TextBlock Grid.Column="0" Grid.Row="5" Text="Об'єм за 24 год:"/>
-                                <TextBlock Grid.Column="0" Grid.Row="6" Text="Назва майданчика:"/>
+                                <TextBlock Grid.Column="0" Grid.Row="6" Text="Сайт майданчика:"/>
 
                                 <StackPanel Grid.Column="1" Grid.Row="0"
                                             Orientation="Horizontal"
@@ -274,7 +274,12 @@
                                 <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding PriceUnconverted, Converter={StaticResource usdprice}}"/>
                                 <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Change24h, Converter={StaticResource percent}}"/>
                                 <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Spread, Converter={StaticResource percent}}"/>
-                                <TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding Volume24h, Converter={StaticResource usdprice}, ConverterParameter=$}"/>   
+                                <TextBlock Grid.Column="1" Grid.Row="5" Text="{Binding Volume24h, Converter={StaticResource usdprice}, ConverterParameter=$}"/>
+                                <TextBlock Grid.Column="1" Grid.Row="6">                                    
+                                    <Hyperlink Command="{Binding DataContext.HyperlinkCommand ,RelativeSource={RelativeSource AncestorType=Window}}">
+                                        <TextBlock Text="{Binding ExchangeId}"/>                                        
+                                    </Hyperlink>
+                                </TextBlock>
                             </Grid>                            
                         </StackPanel>
                     </GroupBox>

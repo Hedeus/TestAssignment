@@ -22,10 +22,7 @@ namespace TestAssignment.Infrastructure.Converters
                     break;
             }
             
-            string formatG = "G" + significantDigits.ToString();
-            //string t1 = ((double)value).ToString(formatG, CultureInfo.InvariantCulture);
-            //double t2 = System.Convert.ToDouble(t1, CultureInfo.InvariantCulture);
-            //string result = t2.ToString("F8", CultureInfo.InvariantCulture);
+            string formatG = "G" + significantDigits.ToString();            
             string result = System.Convert.ToDouble(((double)value).
                     ToString(formatG, CultureInfo.InvariantCulture), CultureInfo.InvariantCulture).
                 ToString("F8", CultureInfo.InvariantCulture);

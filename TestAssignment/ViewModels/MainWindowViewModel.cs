@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -59,12 +60,12 @@ namespace TestAssignment.ViewModels
         public Asset SelectedAsset { get => _SelectedAsset; set => Set(ref _SelectedAsset, value); }
         #endregion
 
-        #region MarketsList : MarketsRoot - Сторінка зі списком торгівельних майданчиків
+        #region MarketsList : MarketsRoot - Сторінка зі списком варіантів обміну
         private MarketsRoot _MarketsList = new MarketsRoot();
         public MarketsRoot MarketsList { get => _MarketsList; set => Set(ref _MarketsList, value); }
         #endregion
 
-        #region SelectedMarket : Market - Обраний торгівельний майданчик
+        #region SelectedMarket : Market - Обраний варіант обміну
         private Market _SelectedMarket;
         public Market SelectedMarket { get => _SelectedMarket; set => Set(ref _SelectedMarket, value); }
         #endregion
@@ -77,6 +78,11 @@ namespace TestAssignment.ViewModels
         #region BlockTab : bool - Блокування неактивної вкладки
         private bool _BlockTab = false;
         public bool BlockTab { get => _BlockTab; set => Set(ref _BlockTab, value); }
+        #endregion
+
+        #region CurExchange : Exchange - Інформація по торгівельний майданчик
+        private Exchange _CurExchange = new();
+        public Exchange CurExchange { get => _CurExchange; set => Set(ref _CurExchange, value); }
         #endregion
 
         /*-------------------------------------Методи-------------------------------------------*/
@@ -130,7 +136,7 @@ namespace TestAssignment.ViewModels
         }
         #endregion
 
-        #region LoadMarketDataAsync - Асинхронний метод завантаження даних про торгівельні майданчики
+        #region LoadMarketDataAsync - Асинхронний метод завантаження даних про варіанти обміну
         private async Task<MarketsRoot> LoadMarketDataAsync(string asset = null)
         {
             string url;
@@ -151,6 +157,30 @@ namespace TestAssignment.ViewModels
                 }
                 MarketsRoot markets = JsonConvert.DeserializeObject<MarketsRoot>(response);
                 return markets;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Не вдалось отримати даны про приптовалюту", ex);
+            }
+        }
+        #endregion
+
+        #region LoadExchangeInfoAsync - Асинхронний метод завантаження даних про торгівельний майданчик
+        private async Task<ExchangeRoot> LoadExchangeInfoAsync(string exchandeId)
+        {
+            string url = "https://www.cryptingup.com/api/exchanges/" + exchandeId;
+            
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+            try
+            {
+                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync());
+                string response;
+                using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
+                {
+                    response = streamReader.ReadToEnd();
+                }
+                ExchangeRoot exchange = JsonConvert.DeserializeObject<ExchangeRoot>(response);
+                return exchange;
             }
             catch (Exception ex)
             {
@@ -226,6 +256,20 @@ namespace TestAssignment.ViewModels
             MarketsList = await LoadMarketDataAsync(SelectedAsset.AssetId);
             SelectedTab = 1;
             //CanLoadData = !CanLoadData;
+        }
+        #endregion
+
+        #region HyperlinkCommand - Повернення на попередню сторінку
+        private ICommand _HyperlinkCommand;
+        public ICommand HyperlinkCommand => _HyperlinkCommand
+            ??= new LambdaCommandAsync(OnHyperlinkCommandExecuted, CanHyperlinkCommandExecute);
+        private bool CanHyperlinkCommandExecute() => true;
+        private async Task OnHyperlinkCommandExecuted()
+        {
+            string url = "ttps://www.cryptingup.com/api/exchanges/" + SelectedMarket.ExchangeId;
+            ExchangeRoot ex = await LoadExchangeInfoAsync(SelectedMarket.ExchangeId);
+            CurExchange = ex.Exchange;
+            Process.Start(new ProcessStartInfo { FileName = CurExchange.Website, UseShellExecute = true });
         }
         #endregion
 
