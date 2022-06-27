@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -22,14 +25,33 @@ namespace TestAssignment.ViewModels
         public string Status { get => _Status; set => Set(ref _Status, value); }
         #endregion
 
-        #region AssetsList : AssetsRoot - Сторінка зі списком криптовалюти
-        private AssetsRoot _AssetsList = new AssetsRoot();
-        public AssetsRoot AssetsList { get => _AssetsList; set => Set(ref _AssetsList, value); }
-        #endregion
-
         #region CanLoadData : bool - Можливысть завантаження даних
         private bool _CanLoadData = true;
-        public bool CanLoadData {  get => _CanLoadData; set => Set(ref _CanLoadData, value); }
+        public bool CanLoadData { get => _CanLoadData; set => Set(ref _CanLoadData, value); }
+        #endregion
+
+        #region CurrentAssetsPage : int - номер поточної сторінки криптовалюти
+        private int _CurrentAssetsPage = 0;
+        public int CurrentAssetsPage { get => _CurrentAssetsPage; set => Set(ref _CurrentAssetsPage, value); }
+        #endregion
+
+        #region AssetPagesCount : int - кількість сторінок валюти
+        private int _AssetPagesCount = 0;
+        public int AssetPagesCount { get => _AssetPagesCount; set => Set(ref _AssetPagesCount, value); }
+        #endregion
+
+        #region _LoadedAssets : AssetsRoot - остання завантажена сторінка криптовалюти
+        private AssetsRoot _LoadedAssets = new();
+        //public AssetsRoot LoadedAssets { get => _LoadedAssets; set => Set(ref _LoadedAssets, value); }
+        #endregion
+
+        #region _AllLoadedAssets : List<AssetsRoot> - Усі завантажені сторінки криптовалюти
+        private List<AssetsRoot> _AllLoadedAssets = new();
+        #endregion
+
+        #region CurrentAssetList : List<Asset> - поточний список валюти
+        private List<Asset> _CurrentAssetList = new();
+        public List<Asset> CurrentAssetList { get => _CurrentAssetList; set => Set(ref _CurrentAssetList, value); }
         #endregion
 
         #region SelectedAsset : Asset - Обрана криптовалюта
@@ -84,12 +106,11 @@ namespace TestAssignment.ViewModels
         #endregion
 
         #region LoadAssetsDataAsync - Асинхронний метод завантаження даних про валюту
-        private async Task<AssetsRoot> LoadAssetsDataAsync()
+        private async Task<AssetsRoot> LoadAssetsDataAsync(string next = null)
         {
-            string url = "https://www.cryptingup.com/api/assets?size=10";
-            //string url = "https://api.coincap.io/v2/assets";
-            if (AssetsList.Next != "")
-                url += "&&start=" + AssetsList.Next;
+            string url = "https://www.cryptingup.com/api/assets?size=15";            
+            if (!(next is null))
+                url += "&&start=" + next;
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             try
             {
@@ -104,7 +125,7 @@ namespace TestAssignment.ViewModels
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Не вдалось отримати даны про приптовалюту", ex);
+                throw new InvalidOperationException("Не вдалось отримати дані про приптовалюту", ex);
             }
         }
         #endregion
@@ -112,8 +133,13 @@ namespace TestAssignment.ViewModels
         #region LoadMarketDataAsync - Асинхронний метод завантаження даних про торгівельні майданчики
         private async Task<MarketsRoot> LoadMarketDataAsync(string asset = null)
         {
-            if (asset == null) return null;
-            string url = "https://www.cryptingup.com/api/assets/" + asset + "/markets?size=10";            
+            string url;
+            if (asset == null)
+            {
+                url = "https://www.cryptingup.com/api/markets?size=10";
+            }
+            else
+                url = "https://www.cryptingup.com/api/assets/" + asset + "/markets?size=15";            
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             try
             {
@@ -143,12 +169,52 @@ namespace TestAssignment.ViewModels
         {
             //CanLoadData = !CanLoadData;
             Status = "Кнопку натиснуто";
-            AssetsList = await LoadAssetsDataAsync();
-            //CanLoadData = !CanLoadData;
+            _LoadedAssets = await LoadAssetsDataAsync();
+            _AllLoadedAssets.Clear();
+            _AllLoadedAssets.Add(_LoadedAssets);
+            CurrentAssetList = _LoadedAssets.Assets;
+            CurrentAssetsPage = 1;
+            AssetPagesCount = 1;
+            //CanLoadData = !CanLoadData;            
         }
         #endregion
 
-        #region LoadAssetsDataCommand - Команда завантаження даних про валюту
+        #region LoadMoreAssetsCommand - Команда завантаження нової сторінки валюти
+        private ICommand _LoadMoreAssetsCommand;
+        public ICommand LoadMoreAssetsCommand => _LoadMoreAssetsCommand
+            ??= new LambdaCommandAsync(OnLoadMoreAssetsCommandExecuted, CanLoadMoreAssetsCommandExecute);
+        private bool CanLoadMoreAssetsCommandExecute() => CanLoadData;
+        private async Task OnLoadMoreAssetsCommandExecuted()
+        {
+            //CanLoadData = !CanLoadData;
+            CurrentAssetsPage++;
+            if (CurrentAssetsPage <= _AllLoadedAssets.Count)
+            {
+                CurrentAssetList = _AllLoadedAssets[CurrentAssetsPage-1].Assets;                
+                return;
+            }
+            Status = "Кнопку Вперед натиснуто";             
+            _LoadedAssets = await LoadAssetsDataAsync(_AllLoadedAssets.Last().Next);            
+            _AllLoadedAssets.Add(_LoadedAssets);
+            CurrentAssetList = _LoadedAssets.Assets;            
+            AssetPagesCount++;
+            //CanLoadData = !CanLoadData;            
+        }
+        #endregion
+
+        #region AssetsBackCommand - Повернення на попередню сторінку
+        private ICommand _AssetsBackCommand;
+        public ICommand AssetsBackCommand => _AssetsBackCommand
+            ??= new LambdaCommand(OnAssetsBackCommandExecuted, CanAssetsBackCommandExecute);
+        private bool CanAssetsBackCommandExecute() => CurrentAssetsPage > 1;
+        private void OnAssetsBackCommandExecuted()
+        {
+            CurrentAssetsPage--;
+            CurrentAssetList = _AllLoadedAssets[CurrentAssetsPage-1].Assets;
+        }
+        #endregion
+
+        #region LoadMarketDataCommand - Команда завантаження даних про ринки
         private ICommand _LoadMarketDataCommand;
         public ICommand LoadMarketDataCommand => _LoadMarketDataCommand
             ??= new LambdaCommandAsync(OnLoadMarketDataCommandExecuted, CanLoadMarketDataCommandExecute);
@@ -156,7 +222,7 @@ namespace TestAssignment.ViewModels
         private async Task OnLoadMarketDataCommandExecuted()
         {
             //CanLoadData = !CanLoadData;
-            Status = "Кнопку 'Де купити' натиснуто";
+            Status = "Кнопку 'Де купити' натиснуто";            
             MarketsList = await LoadMarketDataAsync(SelectedAsset.AssetId);
             SelectedTab = 1;
             //CanLoadData = !CanLoadData;

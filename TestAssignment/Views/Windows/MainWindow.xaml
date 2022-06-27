@@ -9,7 +9,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"  
         xmlns:m="clr-namespace:TestAssignment.Models"
         DataContext="{Binding MainWindowModel ,Source={StaticResource Locator}}"
-        Title="{Binding Title}" Height="450" Width="800">
+        Title="{Binding Title}" Height="490" Width="600">
     <Window.Resources>
         <!--<converter:ItemBackGroundConverter x:Key="itembackground"></converter:ItemBackGroundConverter>-->
         <converter:PriceToUSDConverter x:Key="usdprice"/>
@@ -54,15 +54,35 @@
                             <StackPanel DockPanel.Dock="Bottom"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Stretch">
-                                <Button Content="Left"
-                                        Margin="3"/>
-                                <TextBox Text="23" Margin="3 3 0 3"/>
-                                <TextBlock Text="/24"
-                                           Margin="3"/>
-                                <Button Content="Right"
-                                        Margin="3"/>
+                                <Button Margin="3" Padding="2"
+                                        Background="WhiteSmoke"
+                                        Command="{Binding AssetsBackCommand}">
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <fa:ImageAwesome Icon="Solid_CaretLeft"
+                                                         PrimaryColor="ForestGreen"
+                                                         Height="13" Margin="0 0 3 0"/>
+                                        <TextBlock Text="Назад"/>
+                                    </StackPanel>
+                                </Button>
+                                <TextBox Text="{Binding CurrentAssetsPage}" Margin="3 3 0 3" Padding="0 3 0 0"/>
+                                <TextBlock Text="{Binding AssetPagesCount, StringFormat=/{0}}"
+                                           Margin="3" Padding="0 3 0 0"/>
+                                <Button Margin="3" Padding="2"
+                                        Background="WhiteSmoke"
+                                        Command="{Binding LoadMoreAssetsCommand}">
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Вперед"/>
+                                        <fa:ImageAwesome Icon="Solid_CaretRight"
+                                                         PrimaryColor="ForestGreen"
+                                                         Height="13" Margin="3 0 0 0"/>
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
-                            <ListBox ItemsSource="{Binding AssetsList.Assets}"
+                            <ListBox ItemsSource="{Binding CurrentAssetList}"
                                      AlternationCount="1"
                                      SelectedItem="{Binding SelectedAsset}">                            
                                 <ListBox.ItemContainerStyle>
@@ -154,7 +174,7 @@
                                                      PrimaryColor="Blue"
                                                      Height="15" Margin="7 0 0 0"/>
                                 </StackPanel>
-                            </Button>
+                            </Button>  
                         </StackPanel>
                     </GroupBox>
                     <GridSplitter Grid.Column="0" HorizontalAlignment="Right" Width="3"/>
@@ -181,20 +201,8 @@
                                                      Height="20" Margin="0 0 7 0"/>
                                     <TextBlock Text="Повернутись"/>
                                 </StackPanel>
-                            </Button>
-                            <StackPanel DockPanel.Dock="Bottom"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Stretch">
-                                <Button Content="Left"
-                                        Margin="3"/>
-                                <TextBox Text="23" Margin="3 3 0 3"/>
-                                <TextBlock Text="/24"
-                                           Margin="3"/>
-                                <Button Content="Right"
-                                        Margin="3"/>
-                            </StackPanel>
-                            <ListBox ItemsSource="{Binding MarketsList.Markets}"
-                                     AlternationCount="1"
+                            </Button>                            
+                            <ListBox ItemsSource="{Binding MarketsList.Markets}"                                     
                                      SelectedItem="{Binding SelectedMarket}">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
@@ -205,7 +213,7 @@
                                     <DataTemplate DataType="m:Market">
                                         <DockPanel>
                                             <TextBlock DockPanel.Dock="Right" Text="{Binding PriceUnconverted, Converter={StaticResource usdprice}}"/>
-                                            <StackPanel DockPanel.Dock="Left">
+                                            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                                                 <TextBlock Text="{Binding ExchangeId}" Margin="0 0 3 0"/>
                                                 <TextBlock Text="{Binding BaseAsset}"/>
                                                 <TextBlock Text="{Binding QuoteAsset, StringFormat=-{0}}" Margin="0 0 3 0"/>
@@ -228,7 +236,7 @@
                                                 <Setter Property="FontWeight" Value="Bold"/>
                                             </Trigger>
                                             <Trigger Property="Grid.Column" Value="1">
-                                                <Setter Property="Margin" Value="0 2 0 2"/>
+                                                <Setter Property="Margin" Value="0 3 0 0"/>
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
@@ -246,19 +254,21 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Column="0" Grid.Row="0" Text="Пара"/>
+                                <TextBlock Grid.Column="0" Grid.Row="0" Text="Пара:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="1" Text="Вартість USD:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="2" Text="Вартість неконвертована:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="3" Text="Зміни за 24 год:"/>
-                                <TextBlock Grid.Column="0" Grid.Row="4" Text="Спред"/>                                
+                                <TextBlock Grid.Column="0" Grid.Row="4" Text="Спред:"/>                                
                                 <TextBlock Grid.Column="0" Grid.Row="5" Text="Об'єм за 24 год:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="6" Text="Назва майданчика:"/>
 
                                 <StackPanel Grid.Column="1" Grid.Row="0"
                                             Orientation="Horizontal"
-                                            HorizontalAlignment="Right">
-                                    <TextBlock Text="{Binding BaseAsset}"/>
-                                    <TextBlock Text="{Binding QuoteAsset, StringFormat=-{0}}"/>
+                                            HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding BaseAsset}"
+                                               Grid.Column="1" />
+                                    <TextBlock Text="{Binding QuoteAsset, StringFormat=-{0}}"
+                                               Grid.Column="1"/>
                                 </StackPanel>
                                 <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Price, Converter={StaticResource usdprice}, ConverterParameter=$}"/>
                                 <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding PriceUnconverted, Converter={StaticResource usdprice}}"/>

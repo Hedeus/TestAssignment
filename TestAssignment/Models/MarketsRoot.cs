@@ -6,9 +6,9 @@ namespace TestAssignment.Models
     internal class MarketsRoot
     {
         [JsonProperty("markets")]
-        public List<Market> Markets;
+        public List<Market> Markets { get; set; }
 
         [JsonProperty("next")]
-        public string Next;
+        public string Next { get; set; }
     }
 }
