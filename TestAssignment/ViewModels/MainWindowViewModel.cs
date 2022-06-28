@@ -1,11 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -28,7 +26,7 @@ namespace TestAssignment.ViewModels
         #endregion
 
         #region Status : string - Стан
-        private string _Status = "Готово";
+        private string _Status = "0";
         public string Status { get => _Status; set => Set(ref _Status, value); }
         #endregion
 
@@ -61,24 +59,6 @@ namespace TestAssignment.ViewModels
         }
         #endregion
 
-
-
-        #region НЕ ВИКОРИСТОВУЄТЬСЯ
-        //#region _LoadedAssets : AssetsRoot - остання завантажена сторінка криптовалюти
-        //private AssetsRoot _LoadedAssets = new();
-        ////public AssetsRoot LoadedAssets { get => _LoadedAssets; set => Set(ref _LoadedAssets, value); }
-        //#endregion
-
-        //#region _AllLoadedAssets : List<AssetsRoot> - Усі завантажені сторінки криптовалюти
-        //private List<AssetsRoot> _AllLoadedAssets = new();
-        //#endregion
-
-        //#region CurrentAssetList : List<Asset> - поточний список валюти
-        //private List<Asset> _CurrentAssetList = new();
-        //public List<Asset> CurrentAssetList { get => _CurrentAssetList; set => Set(ref _CurrentAssetList, value); }
-        //#endregion 
-        #endregion
-
         #region SelectedAsset : Asset - Обрана криптовалюта
         private Asset _SelectedAsset;
         public Asset SelectedAsset { get => _SelectedAsset; set => Set(ref _SelectedAsset, value); }
@@ -107,14 +87,15 @@ namespace TestAssignment.ViewModels
         #region CurExchange : Exchange - Інформація по торгівельну платформу
         private Exchange _CurExchange = new();
         public Exchange CurExchange { get => _CurExchange; set => Set(ref _CurExchange, value); }
+        #endregion        
+
+        #region _ItemsPerPage : int - (ЗАПЛАНОВАНО) кількість запісів на сторінці
+        private int _ItemsPerPage = 15;
         #endregion
 
-        /*--------------------------------------------------------------------------------------*/
-        /*-------------------------------------Filter-------------------------------------------*/
-        /*--------------------------------------------------------------------------------------*/
-
-        private int _ItemsPerPage = 15;
-        private string _Next;
+        #region _Next : string - наступна сторінка для завантаження в API
+        private string _Next; 
+        #endregion
 
         #region Filter : string - Рядок вільтру
         private string _Filter;
@@ -153,18 +134,31 @@ namespace TestAssignment.ViewModels
                     OnPropertyChanged(nameof(AssetsView));
                 }
             }
-        }      
+        }
         #endregion
 
-        private  CollectionViewSource _AssetsViewSource;
-        public ICollectionView AssetsView => _AssetsViewSource?.View;
-
-        /*--------------------------------------------------------------------------------------*/
-        /*-------------------------------------Filter-------------------------------------------*/
-        /*--------------------------------------------------------------------------------------*/
-
+        #region _AssetsViewSource та AssetsView - елементи для відображення колекції з фільтрацією
+        private CollectionViewSource _AssetsViewSource;
+        public ICollectionView AssetsView => _AssetsViewSource?.View; 
         #endregion
 
+        #region НЕ ВИКОРИСТОВУЄТЬСЯ
+        //#region _LoadedAssets : AssetsRoot - остання завантажена сторінка криптовалюти
+        //private AssetsRoot _LoadedAssets = new();
+        ////public AssetsRoot LoadedAssets { get => _LoadedAssets; set => Set(ref _LoadedAssets, value); }
+        //#endregion
+
+        //#region _AllLoadedAssets : List<AssetsRoot> - Усі завантажені сторінки криптовалюти
+        //private List<AssetsRoot> _AllLoadedAssets = new();
+        //#endregion
+
+        //#region CurrentAssetList : List<Asset> - поточний список валюти
+        //private List<Asset> _CurrentAssetList = new();
+        //public List<Asset> CurrentAssetList { get => _CurrentAssetList; set => Set(ref _CurrentAssetList, value); }
+        //#endregion 
+        #endregion
+
+        #endregion
 
         /*-------------------------------------Методи-------------------------------------------*/
 
@@ -289,7 +283,6 @@ namespace TestAssignment.ViewModels
 
         #endregion
 
-
         /*-------------------------------------Команди-------------------------------------------*/
         #region Команди
 
@@ -300,15 +293,15 @@ namespace TestAssignment.ViewModels
         private bool CanLoadAssetsDataCommandExecute() => CanLoadData;
         private async Task OnLoadAssetsDataCommandExecuted()
         {
-            CanLoadData = !CanLoadData;
-            Status = "Кнопку натиснуто";
+            CanLoadData = !CanLoadData;            
             AssetsRoot assetsRoot = await LoadAssetsDataAsync();            
             CurrentAssetsPage = 1;
             AssetPagesCount = 1;
             Assets = new ObservableCollection<Asset>(assetsRoot.Assets);
             _Next = assetsRoot.Next;
             Filter = "";
-            CanLoadData = await Task.Run(() => !CanLoadData);            
+            CanLoadData = await Task.Run(() => !CanLoadData);   
+            Status = Assets.Count.ToString();
         }
         #endregion
 
@@ -324,21 +317,10 @@ namespace TestAssignment.ViewModels
             foreach (var asset in assetRoot.Assets)
                 Assets.Add(asset);
             _Next = assetRoot.Next;
-            CanLoadData = await Task.Run(() => !CanLoadData);            
+            CanLoadData = await Task.Run(() => !CanLoadData);
+            Status = Assets.Count.ToString();
         }
-        #endregion
-
-        #region AssetsBackCommand - Повернення на попередню сторінку
-        private ICommand _AssetsBackCommand;
-        public ICommand AssetsBackCommand => _AssetsBackCommand
-            ??= new LambdaCommand(OnAssetsBackCommandExecuted, CanAssetsBackCommandExecute);
-        private bool CanAssetsBackCommandExecute() => CurrentAssetsPage > 1;
-        private void OnAssetsBackCommandExecuted()
-        {
-            CurrentAssetsPage--;
-            CurrentAssetList = _AllLoadedAssets[CurrentAssetsPage - 1].Assets;
-        }
-        #endregion
+        #endregion        
 
         #region LoadMarketDataCommand - Команда завантаження даних про варіанти обміну
         private ICommand _LoadMarketDataCommand;
@@ -347,8 +329,7 @@ namespace TestAssignment.ViewModels
         private bool CanLoadMarketDataCommandExecute() => !(SelectedAsset is null);
         private async Task OnLoadMarketDataCommandExecuted()
         {
-            //CanLoadData = !CanLoadData;
-            Status = "Кнопку 'Де купити' натиснуто";
+            //CanLoadData = !CanLoadData;            
             MarketsList = await LoadMarketDataAsync(SelectedAsset.AssetId);
             SelectedTab = 1;
             //CanLoadData = !CanLoadData;
@@ -373,7 +354,7 @@ namespace TestAssignment.ViewModels
         private ICommand _FilterResetCommand;
         public ICommand FilterResetCommand => _FilterResetCommand
             ??= new LambdaCommand(OnFilterResetCommandExecuted, CanFilterResetCommandExecute);
-        private bool CanFilterResetCommandExecute() => CanLoadData;
+        private bool CanFilterResetCommandExecute() => Filter?.Length > 0;
         private void OnFilterResetCommandExecuted()
         {
             Filter = "";

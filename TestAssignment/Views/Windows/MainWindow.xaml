@@ -30,7 +30,7 @@
 
         </Menu>
         <StatusBar DockPanel.Dock="Bottom">
-            <TextBlock Text="{Binding Status}"/>
+            <TextBlock Text="{Binding Status, StringFormat=Кількість завантажених елементів {0}}"/>
         </StatusBar>
         <TabControl SelectedIndex="{Binding SelectedTab}">
             <TabItem Header="Криптовалюта">
@@ -60,40 +60,36 @@
                                 <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"                                         
                                          Padding="3"/>                                
                             </DockPanel>
-                            <StackPanel DockPanel.Dock="Bottom"
-                                        Orientation="Horizontal"
+                            <DockPanel DockPanel.Dock="Bottom"                                        
                                         HorizontalAlignment="Stretch">
-                                <Button Margin="3" Padding="2"
+                                <Button Margin="20 3 3 3" Padding="2"
+                                        DockPanel.Dock="Left"
                                         Background="WhiteSmoke"
-                                        Command="{Binding AssetsBackCommand}">
+                                        Command="{Binding LoadAssetsDataCommand}">
                                     <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center">
-                                        <fa:ImageAwesome Icon="Solid_CaretLeft"
+                                        <fa:ImageAwesome Icon="Solid_ArrowsRotate"
                                                          PrimaryColor="ForestGreen"
                                                          Height="13" Margin="0 0 3 0"/>
-                                        <TextBlock Text="Назад"/>
+                                        <TextBlock Text="Оновити" Margin="0 0 0 2"/>
                                     </StackPanel>
-                                </Button>
-                                <TextBox Text="{Binding CurrentAssetsPage}" Margin="3 3 0 3" Padding="0 3 0 0"/>
-                                <TextBlock Text="{Binding AssetPagesCount, StringFormat=/{0}}"
-                                           Margin="0 3" Padding="0 4 0 0"/>
-                                <Button Margin="3" Padding="2"
+                                </Button>  
+                                <Button Margin="3 3 20 3" Padding="2"
                                         Background="WhiteSmoke"
+                                        DockPanel.Dock="Right"
                                         Command="{Binding LoadMoreAssetsCommand}">
                                     <StackPanel Orientation="Horizontal"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center">
-                                        <TextBlock Text="Вперед"/>
+                                        <TextBlock Text="Завантажити ще"  Margin="0 0 0 2"/>
                                         <fa:ImageAwesome Icon="Solid_CaretRight"
                                                          PrimaryColor="ForestGreen"
                                                          Height="13" Margin="3 0 0 0"/>
                                     </StackPanel>
                                 </Button>
-                            </StackPanel>
-                            
-                            <!--<ListBox ItemsSource="{Binding CurrentAssetList}"-->
-                            <!--<ListBox ItemsSource="{Binding FilteredAssets.View}"-->
+                                <Grid/>
+                            </DockPanel>   
                             <ListBox ItemsSource="{Binding AssetsView}" 
                                      AlternationCount="1"
                                      SelectedItem="{Binding SelectedAsset}">
