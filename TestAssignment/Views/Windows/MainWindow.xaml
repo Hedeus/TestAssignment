@@ -9,7 +9,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"  
         xmlns:m="clr-namespace:TestAssignment.Models"
         DataContext="{Binding MainWindowModel ,Source={StaticResource Locator}}"
-        Title="{Binding Title}" Height="490" Width="600">
+        Title="{Binding Title}" Height="460" Width="600">
     <Window.Resources>
         <!--<converter:ItemBackGroundConverter x:Key="itembackground"></converter:ItemBackGroundConverter>-->
         <converter:PriceToUSDConverter x:Key="usdprice"/>
@@ -23,7 +23,11 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top"
               IsMainMenu="True">
-            <MenuItem Header="Файл"/>
+            <MenuItem Header="Дані">
+                <MenuItem Header="Оновити дані"
+                          Command="{Binding LoadAssetsDataCommand}"/>
+            </MenuItem>
+
         </Menu>
         <StatusBar DockPanel.Dock="Bottom">
             <TextBlock Text="{Binding Status}"/>
@@ -37,20 +41,25 @@
                     </Grid.ColumnDefinitions>
                     <GroupBox Padding="0 5 0 0">
                         <DockPanel>
-                            <Button Height="30"
-                                    Padding="3"
-                                    DockPanel.Dock="Top"
-                                    Background="WhiteSmoke"
-                                    Command="{Binding LoadAssetsDataCommand}">
-                                <StackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                    <fa:ImageAwesome Icon="Solid_ArrowsRotate"
-                                                     PrimaryColor="ForestGreen"
-                                                     Height="15" Margin="0 0 7 0"/>
-                                    <TextBlock Text="Оновити дані"/>
-                                </StackPanel>
-                            </Button>
+                            <DockPanel DockPanel.Dock="Top"
+                                       Margin="3"
+                                       HorizontalAlignment="Stretch">
+                                <Button DockPanel.Dock="Right"
+                                        Padding="3"
+                                        Background="WhiteSmoke"
+                                        Command="{Binding FilterResetCommand}">
+                                    <fa:ImageAwesome DockPanel.Dock="Left"                                                     
+                                                     Icon="Solid_Xmark"
+                                                     PrimaryColor="Red"
+                                                     Height="15" Margin="0 0 3 0"/>
+                                </Button>
+                                <fa:ImageAwesome DockPanel.Dock="Left"
+                                                 Icon="Solid_MagnifyingGlass"
+                                                 PrimaryColor="Black"
+                                                 Height="20" Margin="0 0 3 0"/>
+                                <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"                                         
+                                         Padding="3"/>                                
+                            </DockPanel>
                             <StackPanel DockPanel.Dock="Bottom"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Stretch">
@@ -68,7 +77,7 @@
                                 </Button>
                                 <TextBox Text="{Binding CurrentAssetsPage}" Margin="3 3 0 3" Padding="0 3 0 0"/>
                                 <TextBlock Text="{Binding AssetPagesCount, StringFormat=/{0}}"
-                                           Margin="3" Padding="0 3 0 0"/>
+                                           Margin="0 3" Padding="0 4 0 0"/>
                                 <Button Margin="3" Padding="2"
                                         Background="WhiteSmoke"
                                         Command="{Binding LoadMoreAssetsCommand}">
@@ -82,23 +91,26 @@
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
-                            <ListBox ItemsSource="{Binding CurrentAssetList}"
+                            
+                            <!--<ListBox ItemsSource="{Binding CurrentAssetList}"-->
+                            <!--<ListBox ItemsSource="{Binding FilteredAssets.View}"-->
+                            <ListBox ItemsSource="{Binding AssetsView}" 
                                      AlternationCount="1"
-                                     SelectedItem="{Binding SelectedAsset}">                            
+                                     SelectedItem="{Binding SelectedAsset}">
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>                                    
-                                    </Style>                                
-                                </ListBox.ItemContainerStyle>                            
-                                <ListBox.ItemTemplate>                                
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
                                     <DataTemplate DataType="m:Asset">
                                         <DockPanel>
-                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Price,Converter={StaticResource usdprice}}"/>                                        
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Price,Converter={StaticResource usdprice}}"/>
                                             <TextBlock DockPanel.Dock="Left">
                                                 <TextBlock.Text>
                                                     <MultiBinding StringFormat="{}{0} ({1})">
-                                                        <Binding Path="Name"/>
                                                         <Binding Path="AssetId"/>
+                                                        <Binding Path="Name"/>                                                        
                                                     </MultiBinding>
                                                 </TextBlock.Text>
                                             </TextBlock>
@@ -108,7 +120,16 @@
                             </ListBox>
                         </DockPanel>
                     </GroupBox>
-                    <GroupBox Grid.Column="1" Header="{Binding SelectedAsset.AssetId}">
+                    <GroupBox Grid.Column="1">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:ImageAwesome Icon="Solid_Info"
+                                                     PrimaryColor="DarkSlateGray"
+                                                     Height="15" Margin="0 0 7 0"/>
+                                <TextBlock Text="{Binding SelectedAsset.AssetId}"
+                                           Margin="0"/>
+                            </StackPanel>
+                        </GroupBox.Header>
                         <StackPanel Orientation="Vertical">
                             <Grid DataContext="{Binding SelectedAsset}">
                                 <Grid.Resources>
@@ -120,9 +141,9 @@
                                                 <Setter Property="FontWeight" Value="Bold"/>
                                             </Trigger>
                                             <Trigger Property="Grid.Column" Value="1">
-                                                <Setter Property="Margin" Value="0 2 0 2"/>
+                                                <Setter Property="Margin" Value="0 3 0 0"/>
                                             </Trigger>
-                                        </Style.Triggers>                                    
+                                        </Style.Triggers>
                                     </Style>
                                 </Grid.Resources>
                                 <Grid.ColumnDefinitions>
@@ -137,7 +158,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>                                    
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="Id:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="1" Text="Назва:"/>
@@ -174,34 +195,21 @@
                                                      PrimaryColor="Blue"
                                                      Height="15" Margin="7 0 0 0"/>
                                 </StackPanel>
-                            </Button>  
+                            </Button>
                         </StackPanel>
                     </GroupBox>
                     <GridSplitter Grid.Column="0" HorizontalAlignment="Right" Width="3"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Торгівельні майданчики">
+            <TabItem Header="Торгівельні платформи">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="250" MinWidth="250"/>
+                        <ColumnDefinition Width="62"/>
+                        <ColumnDefinition Width="188"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <GroupBox Padding="0 5 0 0">
+                    <GroupBox Padding="0 5 0 0" Grid.ColumnSpan="2">
                         <DockPanel>
-                            <Button Height="30"
-                                    Padding="3"
-                                    DockPanel.Dock="Top"
-                                    Background="WhiteSmoke"
-                                    Command="{Binding}">
-                                <StackPanel Orientation="Horizontal"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                    <fa:ImageAwesome Icon="Regular_CircleLeft"
-                                                     PrimaryColor="ForestGreen"
-                                                     Height="20" Margin="0 0 7 0"/>
-                                    <TextBlock Text="Повернутись"/>
-                                </StackPanel>
-                            </Button>                            
                             <ListBox ItemsSource="{Binding MarketsList.Markets}"                                     
                                      SelectedItem="{Binding SelectedMarket}">
                                 <ListBox.ItemContainerStyle>
@@ -215,8 +223,10 @@
                                             <TextBlock DockPanel.Dock="Right" Text="{Binding PriceUnconverted, Converter={StaticResource usdprice}}"/>
                                             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                                                 <TextBlock Text="{Binding ExchangeId}" Margin="0 0 3 0"/>
-                                                <TextBlock Text="{Binding BaseAsset}"/>
-                                                <TextBlock Text="{Binding QuoteAsset, StringFormat=-{0}}" Margin="0 0 3 0"/>
+                                                <TextBlock Text="{Binding BaseAsset, StringFormat=({0}}"
+                                                           FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding QuoteAsset, StringFormat=-{0})}" Margin="0 0 3 0"
+                                                           FontWeight="Bold"/>
                                             </StackPanel>
                                         </DockPanel>
                                     </DataTemplate>
@@ -224,7 +234,17 @@
                             </ListBox>
                         </DockPanel>
                     </GroupBox>
-                    <GroupBox Grid.Column="1" Header="{Binding SelectedMarket.ExchangeId}">
+                    <!--<GroupBox Grid.Column="1" Header="{Binding SelectedMarket.ExchangeId}" >-->
+                    <GroupBox Grid.Column="2">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:ImageAwesome Icon="Solid_Info"
+                                                     PrimaryColor="DarkSlateGray"
+                                                     Height="15" Margin="0 0 7 0"/>
+                                <TextBlock Text="{Binding SelectedMarket.ExchangeId}"
+                                           Margin="0"/>
+                            </StackPanel>
+                        </GroupBox.Header>
                         <StackPanel Orientation="Vertical">
                             <Grid DataContext="{Binding SelectedMarket}">
                                 <Grid.Resources>
@@ -258,9 +278,9 @@
                                 <TextBlock Grid.Column="0" Grid.Row="1" Text="Вартість USD:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="2" Text="Вартість неконвертована:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="3" Text="Зміни за 24 год:"/>
-                                <TextBlock Grid.Column="0" Grid.Row="4" Text="Спред:"/>                                
+                                <TextBlock Grid.Column="0" Grid.Row="4" Text="Спред:"/>
                                 <TextBlock Grid.Column="0" Grid.Row="5" Text="Об'єм за 24 год:"/>
-                                <TextBlock Grid.Column="0" Grid.Row="6" Text="Сайт майданчика:"/>
+                                <TextBlock Grid.Column="0" Grid.Row="6" Text="Сайт платформи:"/>
 
                                 <StackPanel Grid.Column="1" Grid.Row="0"
                                             Orientation="Horizontal"
@@ -280,10 +300,10 @@
                                         <TextBlock Text="{Binding ExchangeId}"/>                                        
                                     </Hyperlink>
                                 </TextBlock>
-                            </Grid>                            
+                            </Grid>
                         </StackPanel>
                     </GroupBox>
-                    <GridSplitter Grid.Column="0" HorizontalAlignment="Right" Width="3"/>
+                    <GridSplitter Grid.Column="1" HorizontalAlignment="Left" Width="3" Margin="185,0,0,0"/>
                 </Grid>
             </TabItem>
         </TabControl>
