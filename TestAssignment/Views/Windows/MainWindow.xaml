@@ -11,14 +11,10 @@
         xmlns:m="clr-namespace:TestAssignment.Models"
         DataContext="{Binding MainWindowModel ,Source={StaticResource Locator}}"
         Title="{Binding Title}" Height="460" Width="600">
-    <Window.Resources>
-        <!--<converter:ItemBackGroundConverter x:Key="itembackground"></converter:ItemBackGroundConverter>-->
+    <Window.Resources>        
         <converter:PriceToUSDConverter x:Key="usdprice"/>
         <converter:PercentConverter x:Key="percent"/>
-    </Window.Resources>
-    <Window.InputBindings>
-        <KeyBinding Command="{Binding FindAssetCommand}" Key="Enter"/>
-    </Window.InputBindings>
+    </Window.Resources>    
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadAssetsDataCommand}"/>
@@ -62,21 +58,7 @@
                                                  PrimaryColor="Black"
                                                  Height="20" Margin="0 0 3 0"/>
                                 <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"   
-                                         Padding="3"
-                                         attached:TextBoxProperties.IsFocused="{Binding IsFilterFocused}">
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsKeyboardFocused" Value="True">
-                                                    <Setter Property="attached:TextBoxProperties.IsFocused" Value="True"/>
-                                                </Trigger>
-                                                <Trigger Property="IsKeyboardFocused" Value="False">
-                                                    <Setter Property="attached:TextBoxProperties.IsFocused" Value="False"/>                                                    
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>                                     
-                                </TextBox>                                
+                                         Padding="3"/>
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Bottom"                                        
                                         HorizontalAlignment="Stretch">

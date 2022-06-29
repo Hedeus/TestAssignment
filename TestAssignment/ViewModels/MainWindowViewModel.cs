@@ -301,7 +301,8 @@ namespace TestAssignment.ViewModels
             Assets = new ObservableCollection<Asset>(assetsRoot.Assets);
             _Next = assetsRoot.Next;
             Filter = "";
-            CanLoadData = await Task.Run(() => true).ConfigureAwait(false);   
+            /*CanLoadData = await Task.Run(() => true).ConfigureAwait(false)*/;
+            CanLoadData = true;            
             Status = Assets.Count.ToString();
         }
         #endregion
@@ -318,7 +319,7 @@ namespace TestAssignment.ViewModels
             foreach (var asset in assetRoot.Assets)
                 Assets.Add(asset);
             _Next = assetRoot.Next;
-            CanLoadData = true;
+            CanLoadData = true;            
             Status = Assets.Count.ToString();
         }
         #endregion        
@@ -360,30 +361,6 @@ namespace TestAssignment.ViewModels
         {
             Filter = "";
         }
-        #endregion
-
-        #region FindAssetCommand - Команда пошуку валюти
-        #region FindAssetCommand - Команда завантаження даних про валюту
-        private ICommand _FindAssetCommand;
-        public ICommand FindAssetCommand => _FindAssetCommand
-            ??= new LambdaCommandAsync(OnFindAssetCommandExecuted, CanFindAssetCommandExecute);
-        private bool CanFindAssetCommandExecute() => true;
-        private async Task OnFindAssetCommandExecuted()
-        {
-            bool isFoc = IsFilterFocused;
-            //IsFilterFocused = true;
-            int assetsCount = ((CollectionView)AssetsView).Count;            
-            //CanLoadData = !CanLoadData;
-            //AssetsRoot assetsRoot = await LoadAssetsDataAsync();
-            //CurrentAssetsPage = 1;
-            //AssetPagesCount = 1;
-            //Assets = new ObservableCollection<Asset>(assetsRoot.Assets);
-            //_Next = assetsRoot.Next;
-            //Filter = "";
-            //CanLoadData = await Task.Run(() => !CanLoadData);
-            //Status = Assets.Count.ToString();
-        }
-        #endregion
         #endregion
 
         #endregion
