@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
 using TestAssignment.Infrastructure.Commands;
+using TestAssignment.Infrastructure.Commands.Base;
 using TestAssignment.Models;
 using TestAssignment.ViewModels.Base;
 
@@ -30,7 +31,7 @@ namespace TestAssignment.ViewModels
         public string Status { get => _Status; set => Set(ref _Status, value); }
         #endregion
 
-        #region CanLoadData : bool - Можливысть завантаження даних
+        #region CanLoadData : bool - Можливість завантаження даних
         private bool _CanLoadData = true;
         public bool CanLoadData { get => _CanLoadData; set => Set(ref _CanLoadData, value); }
         #endregion
@@ -77,12 +78,7 @@ namespace TestAssignment.ViewModels
         #region SelectedTab : int - Обрана вкладка
         private int _SelectedTab = 0;
         public int SelectedTab { get => _SelectedTab; set => Set(ref _SelectedTab, value); }
-        #endregion
-
-        #region BlockTab : bool - Блокування неактивної вкладки
-        private bool _BlockTab = false;
-        public bool BlockTab { get => _BlockTab; set => Set(ref _BlockTab, value); }
-        #endregion
+        #endregion        
 
         #region CurExchange : Exchange - Інформація по торгівельну платформу
         private Exchange _CurExchange = new();
@@ -139,7 +135,12 @@ namespace TestAssignment.ViewModels
 
         #region _AssetsViewSource та AssetsView - елементи для відображення колекції з фільтрацією
         private CollectionViewSource _AssetsViewSource;
-        public ICollectionView AssetsView => _AssetsViewSource?.View; 
+        public ICollectionView AssetsView => _AssetsViewSource?.View;
+        #endregion
+
+        #region IsFilterFocused : bool - Чи є рядок фільтрації в фокусі
+        private bool _IsFilterFocused = false;
+        public bool IsFilterFocused { get => _IsFilterFocused; set => Set(ref _IsFilterFocused, value); }
         #endregion
 
         #region НЕ ВИКОРИСТОВУЄТЬСЯ
@@ -197,7 +198,7 @@ namespace TestAssignment.ViewModels
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             try
             {
-                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync());
+                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync().ConfigureAwait(false));
                 string response;
                 using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
                 {
@@ -226,7 +227,7 @@ namespace TestAssignment.ViewModels
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             try
             {
-                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync());
+                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync().ConfigureAwait(false));
                 string response;
                 using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
                 {
@@ -250,7 +251,7 @@ namespace TestAssignment.ViewModels
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             try
             {
-                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync());
+                HttpWebResponse httpWebResponse = (HttpWebResponse)(await httpWebRequest.GetResponseAsync().ConfigureAwait(false));
                 string response;
                 using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
                 {
@@ -293,14 +294,14 @@ namespace TestAssignment.ViewModels
         private bool CanLoadAssetsDataCommandExecute() => CanLoadData;
         private async Task OnLoadAssetsDataCommandExecuted()
         {
-            CanLoadData = !CanLoadData;            
+            CanLoadData = false;            
             AssetsRoot assetsRoot = await LoadAssetsDataAsync();            
             CurrentAssetsPage = 1;
             AssetPagesCount = 1;
             Assets = new ObservableCollection<Asset>(assetsRoot.Assets);
             _Next = assetsRoot.Next;
             Filter = "";
-            CanLoadData = await Task.Run(() => !CanLoadData);   
+            CanLoadData = await Task.Run(() => true).ConfigureAwait(false);   
             Status = Assets.Count.ToString();
         }
         #endregion
@@ -312,12 +313,12 @@ namespace TestAssignment.ViewModels
         private bool CanLoadMoreAssetsCommandExecute() => CanLoadData;
         private async Task OnLoadMoreAssetsCommandExecuted()
         {
-            CanLoadData = !CanLoadData;
+            CanLoadData = false;
             AssetsRoot assetRoot = await LoadAssetsDataAsync(_Next);            
             foreach (var asset in assetRoot.Assets)
                 Assets.Add(asset);
             _Next = assetRoot.Next;
-            CanLoadData = await Task.Run(() => !CanLoadData);
+            CanLoadData = true;
             Status = Assets.Count.ToString();
         }
         #endregion        
@@ -344,7 +345,7 @@ namespace TestAssignment.ViewModels
         private async Task OnHyperlinkCommandExecuted()
         {
             string url = "ttps://www.cryptingup.com/api/exchanges/" + SelectedMarket.ExchangeId;
-            ExchangeRoot ex = await LoadExchangeInfoAsync(SelectedMarket.ExchangeId);
+            ExchangeRoot ex = await LoadExchangeInfoAsync(SelectedMarket.ExchangeId).ConfigureAwait(false);
             CurExchange = ex.Exchange;
             Process.Start(new ProcessStartInfo { FileName = CurExchange.Website, UseShellExecute = true });
         }
@@ -359,7 +360,31 @@ namespace TestAssignment.ViewModels
         {
             Filter = "";
         }
-        #endregion 
+        #endregion
+
+        #region FindAssetCommand - Команда пошуку валюти
+        #region FindAssetCommand - Команда завантаження даних про валюту
+        private ICommand _FindAssetCommand;
+        public ICommand FindAssetCommand => _FindAssetCommand
+            ??= new LambdaCommandAsync(OnFindAssetCommandExecuted, CanFindAssetCommandExecute);
+        private bool CanFindAssetCommandExecute() => true;
+        private async Task OnFindAssetCommandExecuted()
+        {
+            bool isFoc = IsFilterFocused;
+            //IsFilterFocused = true;
+            int assetsCount = ((CollectionView)AssetsView).Count;            
+            //CanLoadData = !CanLoadData;
+            //AssetsRoot assetsRoot = await LoadAssetsDataAsync();
+            //CurrentAssetsPage = 1;
+            //AssetPagesCount = 1;
+            //Assets = new ObservableCollection<Asset>(assetsRoot.Assets);
+            //_Next = assetsRoot.Next;
+            //Filter = "";
+            //CanLoadData = await Task.Run(() => !CanLoadData);
+            //Status = Assets.Count.ToString();
+        }
+        #endregion
+        #endregion
 
         #endregion
 

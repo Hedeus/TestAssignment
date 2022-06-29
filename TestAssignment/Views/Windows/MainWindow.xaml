@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:TestAssignment"
         xmlns:converter="clr-namespace:TestAssignment.Infrastructure.Converters"
         xmlns:fa="http://schemas.fontawesome.com/icons/fonts"
-        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"  
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors" 
+        xmlns:attached="clr-namespace:TestAssignment.Infrastructure.AttachedProperties"
         xmlns:m="clr-namespace:TestAssignment.Models"
         DataContext="{Binding MainWindowModel ,Source={StaticResource Locator}}"
         Title="{Binding Title}" Height="460" Width="600">
@@ -15,6 +16,9 @@
         <converter:PriceToUSDConverter x:Key="usdprice"/>
         <converter:PercentConverter x:Key="percent"/>
     </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding FindAssetCommand}" Key="Enter"/>
+    </Window.InputBindings>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadAssetsDataCommand}"/>
@@ -57,8 +61,22 @@
                                                  Icon="Solid_MagnifyingGlass"
                                                  PrimaryColor="Black"
                                                  Height="20" Margin="0 0 3 0"/>
-                                <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"                                         
-                                         Padding="3"/>                                
+                                <TextBox Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}"   
+                                         Padding="3"
+                                         attached:TextBoxProperties.IsFocused="{Binding IsFilterFocused}">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                    <Setter Property="attached:TextBoxProperties.IsFocused" Value="True"/>
+                                                </Trigger>
+                                                <Trigger Property="IsKeyboardFocused" Value="False">
+                                                    <Setter Property="attached:TextBoxProperties.IsFocused" Value="False"/>                                                    
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>                                     
+                                </TextBox>                                
                             </DockPanel>
                             <DockPanel DockPanel.Dock="Bottom"                                        
                                         HorizontalAlignment="Stretch">
